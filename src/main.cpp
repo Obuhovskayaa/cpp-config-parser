@@ -1,64 +1,56 @@
 #include <iostream>
 #include "config/ConfigValue.hpp"
 
+
+
+template<typename T>
+void func(T&& value) {
+
+	//далее если здесь заполнять условно поле класса, то через forward 
+	//чтоб сохранить тип, в который преобразовались при поступлении сюда те переменные
+	//чтоб либо украсть, если rvalue либо сделать копию, чтоб не испортить изначалное, если lvalue
+
+
+}
+
 int main() {
-	std::cout << "=== Testing ConfigValue ===\n\n";
+
+	const int& ciref = 10;
+	int i = 5;
+	const int ci = 7;
+	int&& irref = 5;
+	int& iref = i;
+	int& lref = irref; // ведёт к значению 5
+
+	func(ciref);//lvalue, не можем грабить без move //преобразуется в int&
+	func(i); //то же самое// int&
+	func(ci); //то же самое //int&
+	func(irref); // тоже lvalue  //int&
+	func(iref); //тоже  //int&
+	func(15); // можем rvalue, никому не принадлежит, протсо число //int&&
+	func(lref);// не можем //int&
 
 
-	std::cout << "=== Creating values === \n";
+	config::ConfigValue cv1(123);
+	config::ConfigValue cv2(13.2);
+	config::ConfigValue cv3(true);
+	config::ConfigValue cv4("on");
+	std::vector<config::ConfigValue> values = { cv1, cv2, cv3, cv4 };
+	config::ConfigValue cv5(values);
 
-	config::ConfigValue num(42);
-	config::ConfigValue height(3.15);
-	config::ConfigValue flag(true);
-	config::ConfigValue text(std::string("Gel"));
+	std::cout << cv1.toString() << std::endl;
+	std::cout << cv4.toString() << std::endl;
+	std::cout << cv5.toString() << std::endl;
+
 	
-	std::vector<config::ConfigValue>values = { 53, true, 3.18 };
-	config::ConfigValue several(values);
-	config::ConfigValue empty;
 
-	std::cout << " num: " << num.toString() << std::endl;
-	std::cout << " height: " << height.toString() << std::endl;
-	std::cout << " flag: " << flag.toString() << std::endl;
-	std::cout << " text: " << text.toString() << std::endl;
-	std::cout << " empty: " << empty.toString() << std::endl;
-	std::cout << " several: " << several.toString() << std::endl;
+	
 
-	std::cout << "\n=== Getting values === \n";
-
-	auto tryGet = [](auto func, const std::string& msg) {
-		try {
-			func();
-		}
-		catch (const std::exception& e) {
-			std::cerr << msg << "Error: " << e.what() << std::endl;
-		}
-		};
-
-		tryGet([&num]() { std::cout << "num as int: " << num.asInt() << std::endl; }, "num ");
-		tryGet([&height]() { std::cout << "height as int: " << height.asInt() << std::endl; }, "height ");
-
-	/*std::cout << "\n=== DEBUG Vector memory ===\n";
-	std::cout << "Adress of several: " << &several << std::endl;
-	std::cout << "Type of several (must be vector): ";
-	switch (several.type()) {
-	case config::ValueType::Vector:
-		std::cout << "Vector\n";
-		break;
-	case config::ValueType::String:
-		std::cout << "String\n";
-		break;
-	default:
-		std::cout << " Other\n";
-		break;
-	}
-	*/
-
-	std::cout << "\n\n=== Type checking: ===\n";
-	std::cout << " is num int? " << (num.isInt() ? "YES" : "NO") << std::endl;
-	std::cout << " is height double? " << (height.isDouble() ? "YES" : "NO") << std::endl;
+	
 
 	return 0;
 
 
 
 }
+

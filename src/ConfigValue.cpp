@@ -5,7 +5,9 @@
 
 namespace config {
 
-	ConfigValue::ConfigValue() : m_type(ValueType::Null) { 
+
+
+	/*ConfigValue::ConfigValue() : m_type(ValueType::Null) {
 
 	}
 
@@ -53,7 +55,7 @@ namespace config {
 				break;
 			case ValueType::Vector:
 			{
-				const auto& other_vec = *other.m_vectorValue; //excessively, but wrote it because i could
+				const auto& other_vec = *other.m_vectorValue;
 				m_vectorValue = new std::vector<ConfigValue>(other_vec);
 				break;
 			}
@@ -93,115 +95,108 @@ namespace config {
 		}
 	}
 
-	ValueType ConfigValue::type() const {
+	ConfigValue::ConfigValue(ConfigValue&& other) noexcept : m_type(other.m_type) {
 
-		return m_type;
-	}
-
-	bool ConfigValue::isNull() const {
-
-		return m_type == ValueType::Null;
-	}
-
-	bool ConfigValue::isInt() const {
-
-		return m_type == ValueType::Int;
-	}
-
-	bool ConfigValue::isDouble() const {
-
-		return m_type == ValueType::Double;
-	}
-
-	bool ConfigValue::isBool() const {
-
-		return m_type == ValueType::Bool;
-	}
-
-	bool ConfigValue::isString() const {
-
-		return m_type == ValueType::String;
-	}
-
-	bool ConfigValue::isVector() const {
-
-		return m_type == ValueType::Vector;
-	}
-
-	int ConfigValue::asInt() const {
-
-		if (!isInt()) {
-			throw std::runtime_error{ "Type is not int!" };
+		switch (m_type) {
+		case ValueType::Int:
+			m_intValue = other.m_intValue;
+			break;
+		case ValueType::Double:
+			m_doubleValue = other.m_doubleValue;
+			break;
+		case ValueType::Bool:
+			m_boolValue = other.m_boolValue;
+			break;
+		case ValueType::String:
+		{
+			new(&m_stringValue) std::string(std::move(other.m_stringValue));
+			other.m_stringValue.~basic_string();
+			break;
 		}
-		return m_intValue;
-	}
-
-	double ConfigValue::asDouble() const {
-
-		if (!isDouble()) {
-			throw std::runtime_error{ "Type is not double!" };
+		case ValueType::Vector:
+		{
+			m_vectorValue = other.m_vectorValue;
+			other.m_vectorValue = nullptr;
+			break;
 		}
-		return m_doubleValue;
-	}
-
-	bool ConfigValue::asBool() const {
-
-		if (!isBool()) {
-			throw std::runtime_error{ "Type is not bool!" };
 		}
-		return m_boolValue;
+		other.m_type = ValueType::Null;
 
 	}
+	*/
 
-	const std::string& ConfigValue::asString() const {
 
-		if (!isString()) {
-			throw std::runtime_error{ "Type is not string!" };
+
+	ValueType ConfigValue::type() const noexcept {
+
+		if (std::holds_alternative<std::monostate>(m_value)) {
+			return ValueType::Null;
 		}
-		return m_stringValue;
-
-	}
-	
-	const std::vector<ConfigValue>& ConfigValue::asVector() const { 
-
-		if (!isVector()) {
-			throw std::runtime_error{ "Type is not vector!" };
+		if (std::holds_alternative<int>(m_value)) {
+			return ValueType::Int;
 		}
-		return *m_vectorValue;
+		if (std::holds_alternative<double>(m_value)) {
+			return ValueType::Double;
+		}
+		if (std::holds_alternative<bool>(m_value)) {
+			return ValueType::Bool;
+		}
+		if (std::holds_alternative<std::string>(m_value)) {
+			return ValueType::String;
+		}
+		if (std::holds_alternative<std::vector<ConfigValue>>(m_value)) {
+			return ValueType::Vector;
+		}
+		return ValueType::Null;
+
+
+
 	}
+
 
 	std::string ConfigValue::toString() const {
 
-		std::stringstream ss;
+		return
+			std::visit([](auto&& value) -> std::string {
 
-		switch (m_type) {
+				using T = std::decay_t<decltype(value)>;
+				if constexpr (std::is_same_v<T, int>) {
+					return std::to_string(value);
+				}
+				else if constexpr (std::is_same_v<T, double>) {
+					return std::to_string(value);
+				}
+				else if constexpr (std::is_same_v<T, bool>) {
+					return value ? "true" : "false";
+				}
+				else if constexpr (std::is_same_v<T, std::string>) {
+					return value;
+				}
+				else if constexpr (std::is_same_v<T, std::vector<ConfigValue>>) {
 
-		case ValueType::Null: 
-			ss << "null";
-			break;
-		case ValueType::Int:
-			ss << m_intValue;
-			break;
-		case ValueType::Double:
-			ss << m_doubleValue;
-			break;
-		case ValueType::Bool:
-			ss << (m_boolValue ? "true" : "false");
-			break;
-		case ValueType::String:
-			ss << "\"" << m_stringValue << "\"";
-			break;
-		case ValueType::Vector:
-			for (const auto& value : *m_vectorValue) {
-				ss << value.toString() << ", ";
-			}
-			break;
-		}
+					std::stringstream ss;
+					ss << "[";
 
-		return ss.str();
+					for (size_t i = 0; i < value.size(); i++) {
+						ss << value[i].toString();
+
+						if (i != value.size() - 1) {
+							ss << ", ";
+						}
+					}
+					ss << "]";
+					return ss.str();
+				}
+				else {
+					return "unknown type";
+				}
+
+			}, m_value);
+	
 	}
 
-	void ConfigValue::cleanUp() {
+
+	/*void ConfigValue::cleanUp() {
 		if (m_type == ValueType::String) {
 			m_stringValue.~basic_string();
 		}
@@ -210,10 +205,8 @@ namespace config {
 		}
 		m_type = ValueType::Null;
 	}
+	*/
 
-	ConfigValue::~ConfigValue() {
-		cleanUp();
-	}
 
 
 
