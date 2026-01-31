@@ -5,6 +5,7 @@
 #include <vector>
 #include <optional>
 #include <variant>
+#include <sstream>
 
 namespace config {
 
@@ -33,11 +34,13 @@ namespace config {
 
 		ConfigValue() : m_value(std::monostate{}) {}
 
+		/*
 		ConfigValue(const ConfigValue&) = default;
 
 		ConfigValue& operator=(const ConfigValue&) = default;
 
 		ConfigValue(ConfigValue&&) noexcept = default;
+		*/
 
 
 		template<typename T, typename =
@@ -66,29 +69,19 @@ namespace config {
 			}
 
 		}
-		
-		/*ConfigValue(int value);
-
-		ConfigValue(double value);
-
-		ConfigValue(bool value);
-
-		ConfigValue(const std::string& value);
-
-		ConfigValue(const std::vector<ConfigValue>& values);*/
-
-
-		
-
 
 		template<typename T>
 		T get() const {
+
+			if (!isInitialized()) {
+				throw std::runtime_error("Value is not initialized");
+			}
 
 			try {
 				return std::get<T>(m_value); //trying to get T type from variant of current obj
 			}
 			catch (const std::bad_variant_access&) {
-				throw std::runtime_error("type mismatch for current obj");
+				throw std::runtime_error("Type mismatch");
 			}
 		}
 
@@ -102,40 +95,86 @@ namespace config {
 
 		}
 
+
+		ValueType type() const noexcept {
+
+			if (std::holds_alternative<std::monostate>(m_value)) {
+				return ValueType::Null;
+			}
+			if (std::holds_alternative<int>(m_value)) {
+				return ValueType::Int;
+			}
+			if (std::holds_alternative<double>(m_value)) {
+				return ValueType::Double;
+			}
+			if (std::holds_alternative<bool>(m_value)) {
+				return ValueType::Bool;
+			}
+			if (std::holds_alternative<std::string>(m_value)) {
+				return ValueType::String;
+			}
+			if (std::holds_alternative<std::vector<ConfigValue>>(m_value)) {
+				return ValueType::Vector;
+			}
+			return ValueType::Null;
+
+		}
+
+		std::string toString() const {
+			return
+				std::visit([](auto&& value) -> std::string {
+
+				using T = std::decay_t<decltype(value)>;
+				if constexpr (std::is_same_v<T, int>) {
+					return std::to_string(value);
+				}
+				else if constexpr (std::is_same_v<T, double>) {
+					return std::to_string(value);
+				}
+				else if constexpr (std::is_same_v<T, bool>) {
+					return value ? "true" : "false";
+				}
+				else if constexpr (std::is_same_v<T, std::string>) {
+					return value;
+				}
+				else if constexpr (std::is_same_v<T, std::vector<ConfigValue>>) {
+
+					std::stringstream ss;
+					ss << "[";
+
+					for (size_t i = 0; i < value.size(); i++) {
+						ss << value[i].toString();
+
+						if (i != value.size() - 1) {
+							ss << ", ";
+						}
+					}
+					ss << "]";
+					return ss.str();
+				}
+				else {
+					return "unknown type";
+				}
+
+					}, m_value);
+		}
+
 		template<typename T>
 		bool is() const noexcept {
 			return std::holds_alternative<T>(m_value);
 		}
 
-
-		ValueType type() const noexcept;
-
-
-
-		/*bool isNull() const;
-
-		bool isInt() const;
-
-		bool isDouble() const;
-
-		bool isBool() const;
-
-		bool isString() const;
-
-		bool isVector() const;
-		*/
-
-
-		std::string toString() const;
-
 		~ConfigValue() = default;
 
 	private:
-		//ValueType m_type;
+
+		bool isInitialized() const {
+			return !(is<std::monostate>());
+		}
 
 		VariantType m_value;
 
-		//void cleanUp();
+		
 
 
 
