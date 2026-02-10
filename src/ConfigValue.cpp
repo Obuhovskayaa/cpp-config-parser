@@ -1,5 +1,5 @@
 #include "config/ConfigValue.hpp"
-
+#include "config/ConfigNode.hpp"
 
 
 
@@ -25,41 +25,55 @@ namespace config {
 		if (std::holds_alternative<std::vector<ConfigValue>>(m_value)) {
 			return ValueType::Vector;
 		}
+		if (std::holds_alternative<std::shared_ptr<ConfigNode>>(m_value)) {
+			return ValueType::Node;
+		}
 		return ValueType::Null;
 
 	}
 
-	std::string ConfigValue::toString() const noexcept {
+	std::string ConfigValue::toString(const std::string& tabs, bool forVec) const noexcept {
 		return
-			std::visit([](auto&& value) -> std::string {
+			std::visit([&tabs, forVec](auto&& value) -> std::string {
 
 			using T = std::decay_t<decltype(value)>;
 			if constexpr (std::is_same_v<T, int>) {
-				return std::to_string(value);
+				return (forVec ? tabs : "") + std::to_string(value);
 			}
 			else if constexpr (std::is_same_v<T, double>) {
-				return std::to_string(value);
+				return (forVec ? tabs : "") + std::to_string(value);
 			}
 			else if constexpr (std::is_same_v<T, bool>) {
-				return value ? "true" : "false";
+				return (forVec ? tabs : "") + (value ? "true" : "false");
 			}
 			else if constexpr (std::is_same_v<T, std::string>) {
-				return value;
+				return (forVec ? tabs : "") + "\"" + value + "\"";
 			}
 			else if constexpr (std::is_same_v<T, std::vector<ConfigValue>>) {
 
-				std::stringstream ss;
-				ss << "[";
+				std::string addTab("  ");
+				addTab += tabs;
 
+				std::stringstream ss;
+				forVec ? ss << tabs : ss << "";
+				ss << "[\n";
+			
 				for (size_t i = 0; i < value.size(); i++) {
-					ss << value[i].toString();
+					ss << value[i].toString(addTab, true);
 
 					if (i != value.size() - 1) {
-						ss << ", ";
+						ss << ", \n";
 					}
 				}
-				ss << "]";
+				
+				ss << "\n" << tabs << "]";
 				return ss.str();
+			}
+			else if constexpr (std::is_same_v<T, std::shared_ptr<ConfigNode>>) {
+				if (value) {
+					return value->toString(tabs, forVec);
+				}
+				return "";
 			}
 			else {
 				return "unknown type";

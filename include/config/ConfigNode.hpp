@@ -2,10 +2,11 @@
 #define CONFIG_NODE_HPP
 
 
-#include "ConfigValue.hpp"
+#include "ConfigValue.hpp" 
 #include <map>
 #include <vector>
 #include <string>
+
 
 namespace config {
 
@@ -29,8 +30,12 @@ namespace config {
 
 		bool has(const std::string& path) const noexcept;
 
-	private:
+		void printNode() const noexcept;
+		std::string toString(const std::string& tabs, bool forVec) const noexcept;
 
+	private:
+		void printNode(const std::string& tabs) const noexcept;
+		
 		std::map<std::string, ConfigValue> m_values;
 		std::map<std::string, ConfigNode> m_children;
 

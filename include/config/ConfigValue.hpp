@@ -9,6 +9,8 @@
 
 namespace config {
 
+	class ConfigNode; //shared_ptr needs
+
 	enum class ValueType {
 
 		Null,
@@ -16,7 +18,8 @@ namespace config {
 		Double,
 		Bool,
 		String,
-		Vector
+		Vector,
+		Node
 
 	};
 
@@ -39,13 +42,26 @@ namespace config {
 				std::is_same_v<Decayed, bool> ||
 				std::is_same_v<Decayed, std::string> ||
 				std::is_convertible_v<Decayed, std::string> ||
+				std::is_same_v<Decayed, std::shared_ptr<ConfigNode>> ||
+				std::is_same_v<Decayed, ConfigNode*> ||
 				std::is_same_v<Decayed, std::vector<ConfigValue>>,
-				"ConfigValue only supports int, double, bool, std::string, std::vector<ConfigValue>"
-
+				"ConfigValue only supports int, double, bool, std::string, std::vector<ConfigValue>, ConfigNode*, std::shared_ptr<ConfigNode>"
 				);
 			if constexpr (std::is_convertible_v<Decayed, std::string>) {
 				m_value.emplace<std::string>(std::forward<T>(value));
-				//m_value = std::string(std::forward<T>(value)) //it use copy constr, not move
+				//m_value = std::string(std::forward<T>(value)) //it uses copy constr, not move
+			}
+			else if constexpr (std::is_same_v<Decayed, ConfigNode*>) {
+				if (value) {
+					m_value = std::make_shared<ConfigNode>(value);
+				}
+				else {
+					m_value = nullptr;
+				}
+			}
+			else if constexpr (std::is_same_v <Decayed, std::shared_ptr<ConfigNode>>) {
+				m_value = std::forward<T>(value);
+
 			}
 			else {
 				m_value.emplace<Decayed>(std::forward<T>(value));
@@ -80,7 +96,7 @@ namespace config {
 
 		ValueType type() const noexcept;
 
-		std::string toString() const noexcept;
+		std::string toString(const std::string& tabs, bool forVec) const noexcept;
 
 		template<typename T>
 		bool is() const noexcept {
@@ -101,7 +117,8 @@ namespace config {
 			double,
 			bool,
 			std::string,
-			std::vector<ConfigValue>
+			std::vector<ConfigValue>, //if doesnt work needs ptrs of ConfigValue
+			std::shared_ptr<ConfigNode>
 		>;
 
 		VariantType m_value;

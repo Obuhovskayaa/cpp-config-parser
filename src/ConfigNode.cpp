@@ -1,4 +1,6 @@
 #include "config/ConfigNode.hpp"
+#include <iostream>
+#include <sstream>
 
 
 namespace config {
@@ -97,7 +99,6 @@ namespace config {
 					splited.push_back(std::move(word));
 					word.clear();
 				}
-
 			}
 			else {
 				word += c;
@@ -109,6 +110,57 @@ namespace config {
 		}
 
 		return splited;
+
+	}
+
+	void ConfigNode::printNode(const std::string& tabs) const noexcept {
+
+		/*std::string tabs = "  ";
+		tabs += addTab;
+		std::cout << "{" << std::endl;
+
+		for (const auto& [key, value] : m_values) {
+			std::cout << tabs << key << ": " << value.toString(addTab) << std::endl;
+		}
+		for (const auto& [key, child] : m_children) {
+			std::cout << tabs << key << ": ";
+			child.printNode(addTab + "  ");
+		}
+		tabs = addTab;
+
+		std::cout << tabs << "}" << std::endl;
+		*/
+
+	}
+
+	void ConfigNode::printNode() const noexcept {
+		std::cout << this->toString("", false);
+	}
+
+	std::string ConfigNode::toString(const std::string& tabs, bool forVec) const noexcept {
+
+		std::string addTab = "  ";
+		addTab += tabs;
+
+		std::stringstream ss;
+		forVec ? ss << tabs : ss << "";
+		ss << "{\n";
+
+		for (auto it = m_values.begin(); it != m_values.end(); ++it) {
+			const auto& [key, value] = *it;
+			ss << addTab << key << ": " << value.toString(addTab, false) << "\n";
+			//if (std::next(it) != m_values.end()) {
+			//	ss << "\n";
+			//}
+		}
+		for (const auto& [key, child] : m_children) {
+			ss << addTab << key << ":";
+			ss << child.toString(addTab, false);
+		}
+
+		ss << "\n" << tabs << "}";
+
+		return ss.str();
 
 	}
 

@@ -19,6 +19,7 @@ set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(PROJECT_SOURCES 
 	${SOURCE_DIR}/ConfigValue.cpp
 	${SOURCE_DIR}/ConfigNode.cpp
+	${SOURCE_DIR}/JsonParser.cpp
 )
 
 add_library(config_parser STATIC
