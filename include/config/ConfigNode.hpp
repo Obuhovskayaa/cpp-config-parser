@@ -1,12 +1,10 @@
 #ifndef CONFIG_NODE_HPP
 #define CONFIG_NODE_HPP
 
-
 #include "ConfigValue.hpp" 
 #include <map>
 #include <vector>
 #include <string>
-
 
 namespace config {
 

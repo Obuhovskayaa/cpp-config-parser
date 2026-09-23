@@ -9,10 +9,8 @@
 
 namespace config {
 
-	class ConfigNode; //shared_ptr needs
-
+	class ConfigNode; 
 	enum class ValueType {
-
 		Null,
 		Int,
 		Double,
@@ -20,20 +18,16 @@ namespace config {
 		String,
 		Vector,
 		Node
-
 	};
 
 	class ConfigValue {
 	public:
-
 		ConfigValue() : m_value(std::monostate{}) {}
 
 		template<typename T, typename =
-		std::enable_if_t< ! std::is_same_v<std::decay_t<T>, ConfigValue>>
-		> //exclude this constr for ConfigValue type
-		ConfigValue(T&& value) { //we use forward because we want to preserve original type 
-		//so either call copy constr or move constr. r-value says "steal me sempaiii". l-value means "copy me"
-
+		std::enable_if_t< ! std::is_same_v<std::decay_t<T>, ConfigValue>>>
+		
+		ConfigValue(T&& value) { 
 			using Decayed = std::decay_t<T>;
 
 			static_assert(
@@ -49,7 +43,6 @@ namespace config {
 				);
 			if constexpr (std::is_convertible_v<Decayed, std::string>) {
 				m_value.emplace<std::string>(std::forward<T>(value));
-				//m_value = std::string(std::forward<T>(value)) //it uses copy constr, not move
 			}
 			else if constexpr (std::is_same_v<Decayed, ConfigNode*>) {
 				if (value) {
@@ -61,23 +54,19 @@ namespace config {
 			}
 			else if constexpr (std::is_same_v <Decayed, std::shared_ptr<ConfigNode>>) {
 				m_value = std::forward<T>(value);
-
 			}
 			else {
 				m_value.emplace<Decayed>(std::forward<T>(value));
 			}
-
 		}
 
 		template<typename T>
 		T get() const {
-
 			if (!isInitialized()) {
 				throw std::runtime_error("Value is not initialized");
 			}
-
 			try {
-				return std::get<T>(m_value); //trying to get T type from variant of current obj
+				return std::get<T>(m_value);
 			}
 			catch (const std::bad_variant_access&) {
 				throw std::runtime_error("Type mismatch");
@@ -86,16 +75,13 @@ namespace config {
 
 		template<typename T>
 		std::optional<T> tryGet() const noexcept {
-
-			if (const T* ptr = std::get_if<T>(&m_value)) { //get_if for noexcept
+			if (const T* ptr = std::get_if<T>(&m_value)) {
 				return *ptr;
 			}
 			return std::nullopt;
-
 		}
 
 		ValueType type() const noexcept;
-
 		std::string toString(const std::string& tabs, bool forVec) const noexcept;
 
 		template<typename T>
@@ -106,25 +92,20 @@ namespace config {
 		~ConfigValue() = default;
 
 	private:
-
 		bool isInitialized() const noexcept {
 			return !(is<std::monostate>());
 		}
-
 		using VariantType = std::variant<
 			std::monostate,
 			int,
 			double,
 			bool,
 			std::string,
-			std::vector<ConfigValue>, //if doesnt work needs ptrs of ConfigValue
+			std::vector<ConfigValue>, 
 			std::shared_ptr<ConfigNode>
 		>;
-
 		VariantType m_value;
-
 	};
-
 }
 
 #endif

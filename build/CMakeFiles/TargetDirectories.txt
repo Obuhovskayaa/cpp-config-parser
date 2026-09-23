@@ -1,0 +1,4 @@
+C:/Users/Dmitrii/Projects/cpp-config-parser/build/CMakeFiles/config_parser.dir
+C:/Users/Dmitrii/Projects/cpp-config-parser/build/CMakeFiles/config_main.dir
+C:/Users/Dmitrii/Projects/cpp-config-parser/build/CMakeFiles/edit_cache.dir
+C:/Users/Dmitrii/Projects/cpp-config-parser/build/CMakeFiles/rebuild_cache.dir

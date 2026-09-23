@@ -1,10 +1,7 @@
 #include "config/JsonParser.hpp"
 #include <stdexcept>
 
-
 namespace config {
-
-
 	JsonParser::JsonParser(std::string_view jsonText)
 		: m_input(jsonText) {}
 
@@ -12,8 +9,7 @@ namespace config {
 		return parseNode();
 	}
 
-	ConfigNode JsonParser::parseNode() {
-		
+	ConfigNode JsonParser::parseNode() {	
 		skipSpaces();
 		ConfigNode node;
 		if (current() == '{') {
@@ -31,7 +27,6 @@ namespace config {
 	}
 
 	void JsonParser::throughNode(std::string path, ConfigNode& node) {
-
 		parsePath(path, node);
 
 		if (current() != '}') {
@@ -41,12 +36,10 @@ namespace config {
 				": Expected '}'"
 			);
 		}
-
 		advance();
 	}
 
 	void JsonParser::parsePath(std::string path, ConfigNode& node) {
-
 		skipSpaces();
 
 		if (current() != '\"') {
@@ -56,7 +49,6 @@ namespace config {
 				": expected '\"' as a start of a word"		
 			);
 		}
-
 		advance();
 		std::string word;
 
@@ -124,19 +116,15 @@ namespace config {
 		else {
 			return;
 		}
-
 	}
 
 	bool JsonParser::isNumber(char c) {
-
 		return c == '0' || c == '1' || c == '2' ||
 			c == '3' || c == '4' || c == '5' || c == '6' ||
 			c == '7' || c == '8' || c == '9';
-		
 	}
 
 	ConfigValue JsonParser::parseNull() {
-
 		if (m_input.substr(m_position, 4) == "null") {
 
 			m_position += 4;
@@ -189,8 +177,7 @@ namespace config {
 
 	}
 
-	ConfigValue JsonParser::parseBool() {
-		
+	ConfigValue JsonParser::parseBool() {	
 		bool value;
 
 		if (m_input.substr(m_position, 4) == "true") {
@@ -234,7 +221,6 @@ namespace config {
 	}
 
 	ConfigValue JsonParser::parseVector() {
-		
 		skipSpaces();
 		std::vector<ConfigValue>values;
 
@@ -299,11 +285,9 @@ namespace config {
 			skipSpaces();
 		}
 		return ConfigValue(values);
-
 	}
 
 	void JsonParser::skipSpaces() {
-
 		while (m_position < m_input.size()) {
 			char c = current();
 
@@ -321,15 +305,12 @@ namespace config {
 	}
 
 	void JsonParser::advance() {
-
 		if (m_position < m_input.size()) {
 			++m_position;
 		}
 	}
 
 	char JsonParser::current() {
-
 		return (m_position < m_input.size()) ? m_input[m_position] : '\0';
 	}
-
 }

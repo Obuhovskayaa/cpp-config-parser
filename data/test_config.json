@@ -7,35 +7,6 @@
       "building": 4,
       "part": 5
     },
-    "flat": 5
-
-
-  },
-  "neighbours": [
-    {
-      "name": "Alla",
-      "age": 50
-    },
-    {
-      "name": "Vova",
-      "age": 92
-    },
-    true,
-    [
-      1,
-      2,
-      4,
-      true,
-      {
-        "sport": [
-          "ski",
-          "boxing"
-        ]
-        
-      }
-    ]
-  ]
-
-
-
+    "flat": 5 
+  }
 }

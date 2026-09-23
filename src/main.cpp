@@ -5,11 +5,9 @@
 #include "config/ConfigNode.hpp"
 #include "config/JsonParser.hpp"
 
-
-
 int main() {
 
-	std::ifstream file("../../../data/test_config.json");
+	std::ifstream file("../data/test_config.json");
 
 	std::stringstream buffer;
 	if (!file.is_open()) {

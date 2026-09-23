@@ -2,9 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-
 namespace config {
-
 	bool ConfigNode::has(const std::string& path) const noexcept {
 		return findValue(path) != nullptr;
 	}
@@ -20,11 +18,9 @@ namespace config {
 			return *val;
 		}
 		throw std::runtime_error("Path is not found: " + path);
-
 	}
 
 	ConfigValue& ConfigNode::operator[](const std::string& path) {
-
 		auto parts = splitPath(path);
 
 		if (parts.empty()) {
@@ -45,19 +41,15 @@ namespace config {
 			ConfigNode& child = currentNode->m_children[parts[i]];
 
 			currentNode = &child;
-
 		}
 		//now currentNode refers to the second last node
 		//and we return the last part of "parts" to its m_values
 
 		return currentNode->m_values[parts.back()];
-
 	}
 
 	const ConfigValue* ConfigNode::findValue(const std::string& path) const noexcept {
-
 		auto parts = splitPath(path);
-
 		if (parts.empty()) {
 			return nullptr;
 		}
@@ -71,10 +63,8 @@ namespace config {
 			if (it == currentNode->m_children.end()) {
 				return nullptr;
 			}
-
 			//currentNode = &currentNode->m_children.at(parts[i]); //[] is not allowed because it can modify the object
 			currentNode = &(it->second);
-
 		}
 
 		auto it = currentNode->m_values.find(parts.back());
@@ -84,16 +74,13 @@ namespace config {
 		}
 
 		return &(it->second);
-
 	}
 
 	std::vector<std::string> ConfigNode::splitPath(const std::string& path) {
-
 		std::vector<std::string> splited;
 		std::string word;
 
 		for (char c : path) {
-
 			if (c == '.') {
 				if (!word.empty()) {
 					splited.push_back(std::move(word));
@@ -110,7 +97,6 @@ namespace config {
 		}
 
 		return splited;
-
 	}
 
 	void ConfigNode::printNode(const std::string& tabs) const noexcept {
@@ -130,7 +116,6 @@ namespace config {
 
 		std::cout << tabs << "}" << std::endl;
 		*/
-
 	}
 
 	void ConfigNode::printNode() const noexcept {
@@ -161,7 +146,5 @@ namespace config {
 		ss << "\n" << tabs << "}";
 
 		return ss.str();
-
 	}
-
 }
